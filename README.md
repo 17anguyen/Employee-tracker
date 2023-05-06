@@ -1,5 +1,16 @@
 # 12 SQL: Employee Tracker
 
+unable to test run this program getting error from sql 
+"
+Failed to open file 'schema.sql', error: 2
+"
+submitting as is
+
+## resources 
+class materials
+https://www.npmjs.com/package/mysql2
+https://stackoverflow.com/questions/6163694/how-do-you-use-mysqls-source-command-to-import-large-files-in-windows
+
 ## Your Task
 
 Developers frequently have to create interfaces that allow non-developers to easily view and interact with information stored in databases. These interfaces are called **content management systems (CMS)**. Your assignment this week is to build a command-line application from scratch to manage a company's employee database, using Node.js, Inquirer, and MySQL.
