@@ -1,17 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
-const consoleTable = require("console.table");
-
-
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-sequelize.sync({ force: false }).then(() => {
-  server.listen(PORT, () => console.log('Now listening ${PORT}'));
-}).catch(err => {
-  console.log(err)
-});
+require("console.table");
+const db = require("./config/connection");
 
 const init = async () => {
   try {
@@ -74,10 +64,10 @@ const viewAllDepartments = async () => {
 const viewAllRoles = async () => {
   try {
     console.log("roles init");
-    const [roles] = `SELECT roles.id, roles.title, departments.name AS department, roles.salary FROM roles
+    const queryStr = `SELECT roles.id, roles.title, departments.name AS department, roles.salary FROM roles
     LEFT JOIN departments ON roles.department_id = departments.id`;
     const [rows, fields] = await db.promise().query(queryStr);
-    console.table(roles);
+    console.table(rows);
     init();
   } catch (err) {
     console.log(err);
@@ -87,7 +77,7 @@ const viewAllRoles = async () => {
 const viewAllEmployees = async () => {
   console.log("employee init");
   try {
-    const query = `SELECT employees.id, employees.first_name, employees.last_name, roles.title AS job_title, departments.name AS department, CONCAT(m.first_name, ' ', m.last_name) AS manager_name FROM employees
+    const queryStr = `SELECT employees.id, employees.first_name, employees.last_name, roles.title AS job_title, departments.name AS department, CONCAT(m.first_name, ' ', m.last_name) AS manager_name FROM employees
     LEFT JOIN roles ON employees.role_id = roles.id
     LEFT JOIN departments ON roles.department_id = departments.id
     LEFT JOIN employees m ON employees.manager_id = m.id`;
@@ -109,8 +99,8 @@ const addDepartment = async () => {
     });
     await db
       .promise()
-      .query(`INSERT INTO department (name) VALUES ('${userInput.department}')`);
-    console.log(`${dept.name} department has been added to the database!\n`);
+      .query(`INSERT INTO departments (name) VALUES ('${userInput.department}')`);
+    console.log(`${userInput.department} department has been added to the database!\n`);
     viewAllDepartments();
   } catch (err) {
     console.log(err);
@@ -120,8 +110,8 @@ const addDepartment = async () => {
 
 const addEmployee = async () => {
   console.log("add employee init");
-  const [roles] = await db.promise().query("select role");
-  const [employees] = await db.promise().query("select employee");
+  const [roles] = await db.promise().query("select * from roles");
+  const [employees] = await db.promise().query("select * from employees");
   console.log(employees);
   const userInput = await inquirer.prompt([
     {
@@ -158,12 +148,12 @@ const addEmployee = async () => {
   await db
     .promise()
     .query(
-      `INSERT INTO employee (first_name,last_name,role_id,manager_id) VALUES ('${userInput.first_name}','${userInput.last_name}', ${userInput.role_id}, ${userInput.manager_id})`
+      `INSERT INTO employees (first_name,last_name,role_id,manager_id) VALUES ('${userInput.first_name}','${userInput.last_name}', ${userInput.role_id}, ${userInput.manager_id})`
     );
   viewAllEmployees();
 }
 const addRole = async () => {
-  const [departments] = await db.promise().query("select department");
+  const [departments] = await db.promise().query("select * from departments");
   const userInput = await inquirer.prompt([
     {
       type: "input",
@@ -189,14 +179,14 @@ const addRole = async () => {
   await db
     .promise()
     .query(
-      `INSERT INTO role (title,salary,department_id) VALUES ('${userInput.title}', '${userInput.salary}', '${userInput.department}')`
+      `INSERT INTO roles (title,salary,department_id) VALUES ('${userInput.title}', '${userInput.salary}', '${userInput.department}')`
     );
   viewAllRoles();
 }
 
 const updateEmployee = async () => {
-  const [employees] = await db.promise().query("select employee");
-  const [roles] = await db.promise().query("select role");
+  const [employees] = await db.promise().query("select * from employees");
+  const [roles] = await db.promise().query("select * from roles");
   const userInput = await inquirer.prompt([
     {
       type: "list",
@@ -220,7 +210,7 @@ const updateEmployee = async () => {
   await db
     .promise()
     .query(
-      `UPDATE employee SET role_id = ${userInput.role} WHERE id = ${userInput.employee}`
+      `UPDATE employees SET role_id = ${userInput.role} WHERE id = ${userInput.employee}`
     );
   viewAllEmployees();
 }
